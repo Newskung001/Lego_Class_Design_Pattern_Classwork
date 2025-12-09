@@ -1,21 +1,16 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
-using Unity.VisualScripting;
+﻿using UnityEngine;
 
-public class Pickup : MonoBehaviour {
+public class Pickup : MonoBehaviour
+{
+    public int coinValue = 10;
 
-	//public GameObject MyPrefab;
-	//GameObject myPrefab;
-	public int coinValue = 10;
-
-	void OnTriggerEnter(Collider col){
-		if (col.tag == "Player") {
-			EventManager.RaiseCoinCollected(coinValue);
-			// ScoreController.score += 10;
-			// ScoreController.currentGold ++;
-			//myPrefab = Instantiate(MyPrefab, this.transform.position, MyPrefab.transform.rotation) as GameObject;
-			gameObject.SetActive(false);
-		}
-	}
+    void OnTriggerEnter(Collider col)
+    {
+        if (col.CompareTag("Player"))
+        {
+            // แจ้งเตือน Event แทนการเรียก ScoreController โดยตรง
+            EventManager.RaiseCoinCollected(coinValue);
+            gameObject.SetActive(false);
+        }
+    }
 }
