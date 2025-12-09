@@ -1,81 +1,55 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
+using UnityEngine.AI;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour
+{
+    private NavMeshAgent nav;
+    private float baseSpeed;
 
-	UnityEngine.AI.NavMeshAgent navigationAgent;
-	Animator animator;
-	float baseSpeed, baseAcceleration;
+    void Awake()
+    {
+        nav = GetComponent<NavMeshAgent>();
+        // จำค่าความเร็วเริ่มต้นไว้
+        baseSpeed = nav.speed;
+    }
 
-	// Use this for initialization
-	void Start () {
-		navigationAgent = GetComponent<UnityEngine.AI.NavMeshAgent> ();
-		animator = GetComponent<Animator> ();
-		baseSpeed = navigationAgent.speed;
-		baseAcceleration = navigationAgent.acceleration;
-	}
+    void Update()
+    {
+        // Logic การเดินด้วยการคลิกเมาส์
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                nav.SetDestination(hit.point);
+            }
+        }
+    }
 
-	public void CancelPowerUp(PowerupType type)
-	{
-		switch (type)
-		{
-			case PowerupType.SpeedBoost:
-				navigationAgent.speed = baseSpeed;
-				break;
-			case PowerupType.AccelerationBoost:
-				navigationAgent.acceleration = baseAcceleration;
-				break;
-		}	
-	}
+    // --- ส่วนที่เพิ่มเข้ามาเพื่อรองรับ Command Pattern ---
 
-	public void ApplyPowerUp(PowerupType type, float duration)
-	{
-		switch (type)
-		{
-			case PowerupType.SpeedBoost:
-				StartCoroutine(SpeedBoost(duration, 3.5f));
-				break;
-		}
-	}
+    // ฟังก์ชันสำหรับ Command เรียกใช้เพื่อเพิ่มความเร็ว
+    public void ApplySpeedBoost(float multiplier, float duration)
+    {
+        // หยุด Coroutine เก่าก่อน (กรณีเก็บซ้อน)
+        StopAllCoroutines();
+        StartCoroutine(SpeedBoostRoutine(multiplier, duration));
+    }
 
-	IEnumerator SpeedBoost(float duration, float multiplier)
-	{
-		navigationAgent.speed = baseSpeed * multiplier;
-		yield return new WaitForSeconds(duration);
-		navigationAgent.speed = baseSpeed;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		PlayerMove ();
+    // Coroutine สำหรับนับเวลาและคืนค่าความเร็วเดิมอัตโนมัติ
+    private IEnumerator SpeedBoostRoutine(float multiplier, float duration)
+    {
+        nav.speed = baseSpeed * multiplier;
+        yield return new WaitForSeconds(duration);
+        nav.speed = baseSpeed;
+    }
 
-		if (animator) {
-			float v = navigationAgent.velocity.x;
-			if (v != 0){
-				animator.SetBool("Moving",true);
-			}else{
-				animator.SetBool("Moving",false);
-			}
-		}
-	}
-
-	void PlayerMove (){
-		if (Input.GetMouseButtonUp (0)) {
-			RaycastHit hit;
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			//Debug.Log(ray);
-
-			if(Physics.Raycast(ray, out hit, 500)){
-				//Debug.DrawLine(ray.origin,hit.point,Color.red,1.0f);
-				//Debug.Log(hit.point);
-				navigationAgent.SetDestination(hit.point);
-			}
-		}
-	}
-
-	void OnTriggerEnter(Collider col){
-		if (col.tag == "Gold") {
-			GetComponent<AudioSource>().Play();
-		}
-	}
+    // ฟังก์ชันสำหรับ Undo Command เรียกใช้เพื่อรีเซ็ตความเร็วทันที
+    public void ResetSpeed()
+    {
+        StopAllCoroutines(); // หยุดการนับถอยหลัง
+        nav.speed = baseSpeed; // คืนค่าความเร็วเดิมทันที
+    }
 }

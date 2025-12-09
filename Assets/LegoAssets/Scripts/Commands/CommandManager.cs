@@ -1,24 +1,37 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CommandManager : MonoBehaviour
 {
-    private Stack<ICommand> undoStack = new();
-    private Stack<ICommand> redoStack = new();
+    private Stack<ICommand> undoStack = new Stack<ICommand>();
+    private Stack<ICommand> redoStack = new Stack<ICommand>();
+
     public void ExecuteCommand(ICommand command)
     {
-        if (command == null) return;
-        command.Execute(); undoStack.Push(command); redoStack.Clear();
+        command.Execute();
+        undoStack.Push(command);
+        redoStack.Clear(); // เคลียร์ Redo ทุกครั้งที่มีคำสั่งใหม่
     }
+
     public void Undo()
     {
-        if (undoStack.Count == 0) return;
-        ICommand last = undoStack.Pop(); last.Undo(); redoStack.Push(last);
+        if (undoStack.Count > 0)
+        {
+            ICommand cmd = undoStack.Pop();
+            cmd.Undo();
+            redoStack.Push(cmd);
+            Debug.Log("Undo Command");
+        }
     }
+
     public void Redo()
     {
-        if (redoStack.Count == 0) return;
-        ICommand cmd = redoStack.Pop(); undoStack.Push(cmd); cmd.Execute();
+        if (redoStack.Count > 0)
+        {
+            ICommand cmd = redoStack.Pop();
+            cmd.Execute();
+            undoStack.Push(cmd);
+            Debug.Log("Redo Command");
+        }
     }
 }

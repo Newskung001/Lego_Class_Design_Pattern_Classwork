@@ -1,23 +1,25 @@
-public class PowerupCommand : ICommand
-{
-    private PlayerController _receiver;
-    private PowerupType _type;
-    private float _duration;
+using UnityEngine;
 
-    public PowerupCommand(PlayerController r, PowerupType t, float d)
+public class PowerUpCommand : ICommand
+{
+    private PlayerController _player;
+    private float _duration;
+    private float _multiplier;
+
+    public PowerUpCommand(PlayerController player, float duration, float multiplier)
     {
-        _receiver = r;
-        _type = t;
-        _duration = d;
+        _player = player;
+        _duration = duration;
+        _multiplier = multiplier;
     }
 
     public void Execute()
     {
-        _receiver.ApplyPowerUp(_type, _duration);
+        _player.ApplySpeedBoost(_multiplier, _duration);
     }
 
     public void Undo()
     {
-        _receiver.CancelPowerUp(_type);
+        _player.ResetSpeed();
     }
 }

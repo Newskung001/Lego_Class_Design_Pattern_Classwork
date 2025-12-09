@@ -1,28 +1,25 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PowerupPickup : MonoBehaviour
+public class PowerUpPickup : MonoBehaviour
 {
-    public PowerupType type;
-    public float duration;
-    private CommandManager _cmdManager;
-    private PlayerController _player;
+    public float duration = 5f;
+    public float multiplier = 2f;
 
-    private void Awake()
+    void OnTriggerEnter(Collider col)
     {
-        _cmdManager = FindObjectOfType<CommandManager>();
-        _player = FindObjectOfType<PlayerController>();
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
+        if (col.CompareTag("Player"))
         {
-            ICommand command = new PowerupCommand(_player, type, duration);
-            _cmdManager.ExecuteCommand(command);
-            gameObject.SetActive(false);
+            PlayerController player = col.GetComponent<PlayerController>();
+            CommandManager cmdManager = FindObjectOfType<CommandManager>();
+
+            if (player != null && cmdManager != null)
+            {
+                // ตรวจสอบการสะกด PowerUpCommand ให้ตรงกับชื่อ Class ในข้อ 2
+                ICommand cmd = new PowerUpCommand(player, duration, multiplier);
+                cmdManager.ExecuteCommand(cmd);
+
+                gameObject.SetActive(false);
+            }
         }
     }
 }
